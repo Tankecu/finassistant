@@ -83,6 +83,11 @@ export function TransactionForm({
     type === 'transfer' && toAccount && expectedToMinor && receivedMinor !== null && receivedMinor !== expectedToMinor
       ? expectedToMinor - receivedMinor
       : null;
+  const fromAccount = accounts.find((a) => a.id === accountId);
+  const commissionShown =
+    commissionMinor && toAccount
+      ? convertMinor(commissionMinor, toAccount.currency, fromAccount?.currency ?? currency, rates)
+      : null;
 
   const submit = async () => {
     if (!amountMinor || amountMinor <= 0) {
@@ -189,11 +194,11 @@ export function TransactionForm({
               className="num"
             />
           </Field>
-          {commissionMinor !== null && commissionMinor !== 0 && (
-            <p className="text-[12px] mt-1.5 px-1" style={{ color: commissionMinor > 0 ? 'var(--color-warning)' : 'var(--color-accent)' }}>
-              {commissionMinor > 0
-                ? `Комиссия: ${formatMoney(commissionMinor, currency, { compact: true })} — запишется как расход «Обмен валют»`
-                : `Выгоднее курса на ${formatMoney(-commissionMinor, currency, { compact: true })}`}
+          {commissionShown !== null && commissionShown !== 0 && (
+            <p className="text-[12px] mt-1.5 px-1" style={{ color: commissionShown > 0 ? 'var(--color-warning)' : 'var(--color-accent)' }}>
+              {commissionShown > 0
+                ? `Комиссия: ${formatMoney(commissionShown, fromAccount?.currency ?? currency, { compact: true })} — запишется как расход «Обмен валют»`
+                : `Выгоднее курса на ${formatMoney(-commissionShown, fromAccount?.currency ?? currency, { compact: true })}`}
             </p>
           )}
         </div>

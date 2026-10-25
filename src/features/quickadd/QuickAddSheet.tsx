@@ -116,9 +116,15 @@ export function QuickAddSheet() {
       ? convertMinor(amountMinor, currency, toAccount.currency, rates)
       : null;
   const receivedOverride = receivedStr ? parseAmountInput(receivedStr, toAccount?.currency ?? currency) : null;
+  const fromAccount = accounts.find((a) => a.id === accountId);
   const commissionMinor =
     type === 'transfer' && toAccount && expectedToMinor && receivedOverride !== null && receivedOverride !== expectedToMinor
       ? expectedToMinor - receivedOverride
+      : null;
+  // комиссия записывается в валюте счёта-источника — показываем её там же
+  const commissionShown =
+    commissionMinor && toAccount
+      ? convertMinor(commissionMinor, toAccount.currency, fromAccount?.currency ?? currency, rates)
       : null;
 
   // ── голос ──
@@ -369,11 +375,11 @@ export function QuickAddSheet() {
                     <button onClick={() => setReceivedStr('')} className="text-faint text-[12px] underline underline-offset-2">авто</button>
                   )}
                 </div>
-                {commissionMinor !== null && commissionMinor !== 0 && (
-                  <div className="text-[12px] mt-1.5" style={{ color: commissionMinor > 0 ? 'var(--color-warning)' : 'var(--color-accent)' }}>
-                    {commissionMinor > 0
-                      ? `Комиссия: ${formatMoney(commissionMinor, currency, { compact: true })} — запишется как расход «Обмен валют»`
-                      : `Выгоднее курса на ${formatMoney(-commissionMinor, currency, { compact: true })}`}
+                {commissionShown !== null && commissionShown !== 0 && (
+                  <div className="text-[12px] mt-1.5" style={{ color: commissionShown > 0 ? 'var(--color-warning)' : 'var(--color-accent)' }}>
+                    {commissionShown > 0
+                      ? `Комиссия: ${formatMoney(commissionShown, fromAccount?.currency ?? currency, { compact: true })} — запишется как расход «Обмен валют»`
+                      : `Выгоднее курса на ${formatMoney(-commissionShown, fromAccount?.currency ?? currency, { compact: true })}`}
                   </div>
                 )}
               </div>
