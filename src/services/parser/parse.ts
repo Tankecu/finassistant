@@ -178,11 +178,22 @@ function findFallbackCategory(
 }
 
 /**
+ * «1010сум» → «1010 сум»: отделяем валютные слова, прилипшие к цифрам.
+ * Множители (35к, 2млн) не трогаем — их разбирает extractAmount.
+ */
+function unglueCurrencyWords(text: string): string {
+  return text.replace(
+    /(\d)(сум\p{L}*|сом\p{L}*|доллар\p{L}*|бакс\p{L}*|евро|рубл\p{L}*|тенге|лир\p{L}*|фунт\p{L}*|usd|uzs|eur|rub|gbp|kzt|try)/giu,
+    '$1 $2',
+  );
+}
+
+/**
  * Главный парсер быстрого ввода.
  * «потратил 35к на еду» → expense 35 000, категория Еда.
  */
 export function parseQuickInput(raw: string, ctx: ParserContext): ParsedOp {
-  const norm = normalizeText(raw);
+  const norm = normalizeText(unglueCurrencyWords(raw));
   const today = ctx.today;
 
   // 1. дата

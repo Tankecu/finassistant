@@ -105,6 +105,7 @@ export async function seedDatabase(): Promise<void> {
     baseCurrency,
     onboarded: 0,
     autoCreateRecurring: 0,
+    autoRates: 1,
     voiceLocale: 'ru-RU',
     createdAt: now,
   } satisfies SettingsRec);

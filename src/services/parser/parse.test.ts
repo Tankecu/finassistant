@@ -167,6 +167,25 @@ describe('extractAmount', () => {
     expect(p.description).toBe('Потратил 35к на еду');
   });
 
+  it('«1010сум» слитно → 1010 UZS', () => {
+    const p = parseQuickInput('потратил 1010сум на еду', ctx);
+    expect(p.type).toBe('expense');
+    expect(p.amountMajor).toBe(1010);
+    expect(p.currency).toBe('UZS');
+  });
+
+  it('«500долларов» слитно → 500 USD', () => {
+    const p = parseQuickInput('получил 500долларов за работу', ctx);
+    expect(p.amountMajor).toBe(500);
+    expect(p.currency).toBe('USD');
+  });
+
+  it('«35к» по-прежнему множитель, а не валюта', () => {
+    const p = parseQuickInput('потратил 35к на еду', ctx);
+    expect(p.amountMajor).toBe(35000);
+    expect(p.currency).toBe('UZS');
+  });
+
   it('«обменял 1 миллион на доллары» → перевод на USD-счёт', () => {
     const p = parseQuickInput('обменял 1 миллион на доллары', ctx);
     expect(p.type).toBe('transfer');

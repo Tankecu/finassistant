@@ -11,6 +11,7 @@ import { QuickAddSheet } from '@/features/quickadd/QuickAddSheet';
 import { TxDetailSheet } from '@/features/transactions/TxDetailSheet';
 import { useUI } from '@/store/ui';
 import { dueRecurring } from '@/services/selectors';
+import { maybeAutoRefreshRates } from '@/services/exchange';
 import { runRecurringNow } from '@/services/entities';
 import { todayISO } from '@/lib/dates';
 
@@ -39,6 +40,12 @@ function AppBody({ tab, toast }: { tab: string; toast: string | null }) {
   const recurring = useLiveQuery(() => db.recurring.where('active').equals(1).toArray(), []) ?? [];
   const autoRan = useRef(false);
   const { showToast } = useUI();
+
+  // живые курсы валют: тихо обновляем при открытии, не чаще раза в 12ч
+  useEffect(() => {
+    if (!settings) return;
+    void maybeAutoRefreshRates();
+  }, [settings?.baseCurrency]);
 
   // автопроведение регулярных платежей (если включено в настройках)
   useEffect(() => {

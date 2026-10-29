@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db/db';
 import { changeBaseCurrency, updateSettings } from '@/services/settings';
+import { fetchLiveRates } from '@/services/exchange';
+import { formatDay } from '@/lib/dates';
 import { saveRate } from '@/services/entities';
 import { downloadCSV, downloadJSON, exportAllJSON, exportTransactionsCSV, generateDemoData, importAllJSON } from '@/services/exportImport';
 import { COMMON_CURRENCY_CODES, currencyMeta } from '@/lib/money';
@@ -17,6 +19,7 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
   const [confirmDemo, setConfirmDemo] = useState(false);
   const [confirmWipe, setConfirmWipe] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [ratesBusy, setRatesBusy] = useState(false);
 
   if (!settings) return <div className="flex-1 flex items-center justify-center text-faint text-sm">Загрузка…</div>;
 
@@ -67,7 +70,41 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
               </Select>
             </Field>
             <div>
-              <div className="text-[13px] text-muted mb-2 px-1">Курсы к {settings.baseCurrency} (1 единица = X {settings.baseCurrency})</div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-[13px] text-muted px-1">
+                  Курсы к {settings.baseCurrency}
+                  {settings.ratesUpdatedAt && (
+                    <span className="text-faint"> · обновлены {formatDay(settings.ratesUpdatedAt.slice(0, 10))}</span>
+                  )}
+                  {!settings.ratesUpdatedAt && <span className="text-faint"> · стартовые, обновите</span>}
+                </div>
+                <button
+                  className="text-accent text-[13px] shrink-0 pl-2"
+                  onClick={async () => {
+                    setRatesBusy(true);
+                    try {
+                      const res = await fetchLiveRates(settings.baseCurrency);
+                      showToast(res ? `Курсы обновлены ✓ (${res.updated} валют)` : 'Не удалось обновить — нет сети');
+                    } finally {
+                      setRatesBusy(false);
+                    }
+                  }}
+                >
+                  {ratesBusy ? 'Обновляю…' : '↻ Обновить'}
+                </button>
+              </div>
+              <label className="flex items-center justify-between gap-3 pb-2.5 mb-1 border-b border-border">
+                <span className="text-[14px]">Автообновление курсов (при открытии)</span>
+                <input
+                  type="checkbox"
+                  checked={settings.autoRates !== 0}
+                  onChange={(e) => void updateSettings({ autoRates: e.target.checked ? 1 : 0 })}
+                  className="w-5 h-5 accent-[var(--color-accent)] shrink-0"
+                />
+              </label>
+              <p className="text-faint text-[12px] mb-2 px-1">
+                Отредактированные вручную курсы не перезаписываются автоматикой.
+              </p>
               <div className="flex flex-col gap-1.5">
                 {otherRates.map((r) => (
                   <div key={r.code} className="flex justify-between items-center py-1.5 border-b border-border last:border-0">

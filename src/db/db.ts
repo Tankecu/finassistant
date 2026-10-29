@@ -187,6 +187,11 @@ export interface SettingsRec {
   lastAccountId?: string;
   autoCreateRecurring: 0 | 1;
   voiceLocale: string;
+  /** Автообновление курсов из API (по умолчанию включено) */
+  autoRates?: 0 | 1;
+  /** Когда курсы обновлялись последний раз */
+  ratesUpdatedAt?: string;
+  ratesSource?: string;
   createdAt: string;
 }
 
