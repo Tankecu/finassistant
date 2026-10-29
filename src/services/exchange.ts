@@ -15,7 +15,7 @@ export interface LiveRatesResult {
  * Курс в БД хранится как «1 единица валюты = rate единиц базовой».
  * Все провайдеры отдают таблицу «валют на 1 USD» → пересчитываем к базовой.
  */
-export async function fetchLiveRates(base: string): Promise<LiveRatesResult | null> {
+export async function fetchLiveRates(base: string, force = false): Promise<LiveRatesResult | null> {
   const perUsd = await fetchPerUsdTable();
   if (!perUsd) return null;
 
@@ -25,11 +25,12 @@ export async function fetchLiveRates(base: string): Promise<LiveRatesResult | nu
 
   const now = new Date().toISOString();
   const settings = await db.settings.get('app');
-  // самое первое обновление: стартовые seed-курсы переводим в авто
+  // force — по кнопке «Обновить»: перезаписываем всё, включая ручные.
+  // Автообновление уважает ручные правки. Первое обновление переводит seed-курсы в авто.
   const firstEver = !settings?.ratesUpdatedAt;
   const existing = await db.exchangeRates.toArray();
   const manualCodes = new Set(
-    firstEver ? [] : existing.filter((r) => r.manual === 1).map((r) => r.code),
+    force || firstEver ? [] : existing.filter((r) => r.manual === 1).map((r) => r.code),
   );
 
   let updated = 0;

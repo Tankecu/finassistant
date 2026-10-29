@@ -83,7 +83,7 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
                   onClick={async () => {
                     setRatesBusy(true);
                     try {
-                      const res = await fetchLiveRates(settings.baseCurrency);
+                      const res = await fetchLiveRates(settings.baseCurrency, true);
                       showToast(res ? `Курсы обновлены ✓ (${res.updated} валют)` : 'Не удалось обновить — нет сети');
                     } finally {
                       setRatesBusy(false);
@@ -103,7 +103,8 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
                 />
               </label>
               <p className="text-faint text-[12px] mb-2 px-1">
-                Отредактированные вручную курсы не перезаписываются автоматикой.
+                Курс из реального API без ключей, обновляется ежедневно. «Обновить» перезаписывает всё;
+                автоматика не трогает только курсы, отредактированные вручную.
               </p>
               <div className="flex flex-col gap-1.5">
                 {otherRates.map((r) => (
