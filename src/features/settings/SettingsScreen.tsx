@@ -114,7 +114,7 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
                       className="num text-[15px] text-muted"
                       onClick={() => { setRateEdit(r.code); setRateValue(String(r.rate)); }}
                     >
-                      {r.rate.toLocaleString('ru-RU')} ✏️
+                      {r.rate.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ✏️
                     </button>
                   </div>
                 ))}
