@@ -122,9 +122,10 @@ export async function seedDatabase(): Promise<void> {
   }));
   await db.categories.bulkAdd(categories);
 
+  // manual: 0 — стартовые значения живут до первого обновления из API
   const rates: ExchangeRate[] = [
     { code: baseCurrency, rate: 1, manual: 1, updatedAt: now },
-    ...RATE_SEEDS.map(([code, rate]): ExchangeRate => ({ code, rate, manual: 1, updatedAt: now })),
+    ...RATE_SEEDS.map(([code, rate]): ExchangeRate => ({ code, rate, manual: 0, updatedAt: now })),
   ];
   await db.exchangeRates.bulkPut(rates);
 }

@@ -24,8 +24,13 @@ export async function fetchLiveRates(base: string): Promise<LiveRatesResult | nu
   if (!basePerUsd || basePerUsd <= 0) return null;
 
   const now = new Date().toISOString();
+  const settings = await db.settings.get('app');
+  // самое первое обновление: стартовые seed-курсы переводим в авто
+  const firstEver = !settings?.ratesUpdatedAt;
   const existing = await db.exchangeRates.toArray();
-  const manualCodes = new Set(existing.filter((r) => r.manual === 1).map((r) => r.code));
+  const manualCodes = new Set(
+    firstEver ? [] : existing.filter((r) => r.manual === 1).map((r) => r.code),
+  );
 
   let updated = 0;
   let skipped = 0;
